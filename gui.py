@@ -105,11 +105,11 @@ def get_latent():
     _, neg_mean = torch.std_mean(tensor_neg_weights, unbiased=False, axis=0)
 
     diff = pos_mean - neg_mean
-    for i in range(72):            
-        j = i // 4
-        m = i % 4
-        sfrom = m * 128
-        sto = sfrom + 128
+    for i in range(divisions_per_channel * 18):            
+        j = i // divisions_per_channel
+        m = i % divisions_per_channel
+        sfrom = m * settings_per_division
+        sto = sfrom + settings_per_division
         diff[j, sfrom:sto] *= c_sliders[i].get()
     diff *= mul_slider.get()
     latent_code += diff
@@ -148,14 +148,12 @@ toolbar.pack(side="top", fill="x")
 vsb.pack(side="right", fill="y")
 text.pack(side="left", fill="both", expand=True)
 
-left_toolbar = Frame(toolbar)
-left_toolbar.pack(side=LEFT)
-left_toolbar2 = Frame(toolbar)
-left_toolbar2.pack(side=LEFT)
-left_toolbar3 = Frame(toolbar)
-left_toolbar3.pack(side=LEFT)
-left_toolbar4 = Frame(toolbar)
-left_toolbar4.pack(side=LEFT)
+toolbars = []
+for t in range(6):
+    left_toolbar = Frame(toolbar)
+    left_toolbar.pack(side=LEFT)
+    toolbars.append(left_toolbar)
+
 npz_dir_entry = Entry(left_toolbar, width=50)
 npz_dir_entry.insert(END, './outdir')
 npz_dir_entry.pack(side=TOP)  # , fill=X, expand=1)
@@ -163,43 +161,38 @@ npz_dir_entry.pack(side=TOP)  # , fill=X, expand=1)
 load_npz_button = Button(left_toolbar, text="Load .npz", command=load_npz_func)
 load_npz_button.pack(side=TOP)
 
-mul_slider = Scale(left_toolbar, from_=-3, to=3, resolution=0.01, orient=HORIZONTAL, length=300)
+mul_slider = Scale(left_toolbar, from_=-3, to=3, resolution=0.01, orient=HORIZONTAL, length=100)
 mul_slider.bind('<B1-Motion>', slider_move)
 mul_slider.bind('<ButtonRelease-1>', slider_move)
 mul_slider.set(1)
 mul_slider.pack(side=TOP)
 
 c_sliders = []
-for i in range(18):
-    c_slider = Scale(left_toolbar, from_=-1, to=3, resolution=0.01, orient=HORIZONTAL, length=300)
-    c_slider.bind('<B1-Motion>', slider_move)
-    c_slider.bind('<ButtonRelease-1>', slider_move)
-    c_slider.set(1)
-    c_slider.pack(side=TOP)
-    c_sliders.append(c_slider)
-for i in range(18):
-    c_slider = Scale(left_toolbar2, from_=-1, to=3, resolution=0.01, orient=HORIZONTAL, length=200)
-    c_slider.bind('<B1-Motion>', slider_move)
-    c_slider.bind('<ButtonRelease-1>', slider_move)
-    c_slider.set(1)
-    c_slider.pack(side=TOP)
-    c_sliders.append(c_slider)
 
-for i in range(18):
-    c_slider = Scale(left_toolbar3, from_=-1, to=3, resolution=0.01, orient=HORIZONTAL, length=200)
-    c_slider.bind('<B1-Motion>', slider_move)
-    c_slider.bind('<ButtonRelease-1>', slider_move)
-    c_slider.set(1)
-    c_slider.pack(side=TOP)
-    c_sliders.append(c_slider)
+divisions_per_channel = 2
+settings_per_division = 512 // divisions_per_channel
+for t in toolbars:
+    for i in range(3 * divisions_per_channel):
+        c_slider = Scale(t, from_=-1, to=3, resolution=0.01, orient=HORIZONTAL, length=100)
+        c_slider.bind('<B1-Motion>', slider_move)
+        c_slider.bind('<ButtonRelease-1>', slider_move)
+        c_slider.set(1)
+        c_slider.pack(side=TOP)
+        c_sliders.append(c_slider)
 
-for i in range(18):
-    c_slider = Scale(left_toolbar4, from_=-1, to=3, resolution=0.01, orient=HORIZONTAL, length=200)
-    c_slider.bind('<B1-Motion>', slider_move)
-    c_slider.bind('<ButtonRelease-1>', slider_move)
-    c_slider.set(1)
-    c_slider.pack(side=TOP)
-    c_sliders.append(c_slider)
+# # medium sytle updates
+for i in range(0 * divisions_per_channel, 5 * divisions_per_channel, 1):
+    c_sliders[i].set(0)
+for i in range(5 * divisions_per_channel, 7 * divisions_per_channel, 1):
+    c_sliders[i].set(.25)
+#for i in range(49,51,1): #eyes direction
+#    c_sliders[i].set(0) #eyes direction
+#for i in range(52,55,1): #eyes direction
+#    c_sliders[i].set(0) #eyes direction
+for i in range(7 * divisions_per_channel, 13 * divisions_per_channel, 1):
+    c_sliders[i].set(.5)
+for i in range(13 * divisions_per_channel, 18 * divisions_per_channel,1):
+    c_sliders[i].set(1)
 
 # for i in range(12):
 #     c_sliders[i].set(0)
@@ -224,15 +217,17 @@ for i in range(18):
 # for i in range(56,72,1):
 #     c_sliders[i].set(1)
 
-# # medium sytle updates
-for i in range(0,20,1):
-    c_sliders[i].set(0)
-for i in range(20,28,1):
-    c_sliders[i].set(.25)
-for i in range(28,52,1):
-    c_sliders[i].set(.5)
-for i in range(52,72,1):
-    c_sliders[i].set(1)
+# # # medium sytle updates
+# for i in range(0,20,1):
+#     c_sliders[i].set(0)
+# for i in range(20,28,1):
+#     c_sliders[i].set(.25)
+# for i in range(25,28,1): #eyes direction
+#     c_sliders[i].set(0) #eyes direction
+# for i in range(28,52,1):
+#     c_sliders[i].set(.5)
+# for i in range(52,72,1):
+#     c_sliders[i].set(1)
 
 # # change color and focus
 # for i in range(0,24,1):
