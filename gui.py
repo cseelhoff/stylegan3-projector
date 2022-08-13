@@ -33,7 +33,7 @@ def load_npz_func():
                 with torch.no_grad():
                     img_orig2 = G.synthesis(weights, noise_mode='const')
                     #img_orig2, _ = g_ema([weights], input_is_latent=True, randomize_noise=False)
-                img_orig2 = torchvision.utils.make_grid(img_orig2, normalize=True, scale_each=True, range=(-1, 1))
+                img_orig2 = torchvision.utils.make_grid(img_orig2, normalize=True, scale_each=True, value_range=(-1, 1))
                 img_orig2 = torch.squeeze(img_orig2)
                 image2 = transform(img_orig2)
                 image2 = image2.resize((256, 256), Image.Resampling.LANCZOS)
@@ -132,7 +132,7 @@ def set_image(latent_code, label, size=256):
     with torch.no_grad():
         img_orig2 = G.synthesis(latent_code, noise_mode='const')
         #img_orig2, _ = g_ema([latent_code], input_is_latent=True, randomize_noise=False)
-    img_orig2 = torchvision.utils.make_grid(img_orig2, normalize=True, scale_each=True, range=(-1, 1))
+    img_orig2 = torchvision.utils.make_grid(img_orig2, normalize=True, scale_each=True, value_range=(-1, 1))
     img_orig2 = torch.squeeze(img_orig2)
     image2 = transform(img_orig2)
     image2 = image2.resize((size, size), Image.Resampling.LANCZOS)
@@ -148,31 +148,34 @@ toolbar.pack(side="top", fill="x")
 vsb.pack(side="right", fill="y")
 text.pack(side="left", fill="both", expand=True)
 
-toolbars = []
-for t in range(6):
-    left_toolbar = Frame(toolbar)
-    left_toolbar.pack(side=LEFT)
-    toolbars.append(left_toolbar)
+left_toolbar_frame = Frame(toolbar)
+left_toolbar_frame.pack(side=LEFT)
 
-npz_dir_entry = Entry(left_toolbar, width=50)
+npz_dir_entry = Entry(left_toolbar_frame, width=15)
 npz_dir_entry.insert(END, './outdir')
 npz_dir_entry.pack(side=TOP)  # , fill=X, expand=1)
 
-load_npz_button = Button(left_toolbar, text="Load .npz", command=load_npz_func)
+load_npz_button = Button(left_toolbar_frame, text="Load .npz", command=load_npz_func)
 load_npz_button.pack(side=TOP)
 
-mul_slider = Scale(left_toolbar, from_=-3, to=3, resolution=0.01, orient=HORIZONTAL, length=100)
+mul_slider = Scale(left_toolbar_frame, from_=-3, to=3, resolution=0.01, orient=HORIZONTAL, length=100)
 mul_slider.bind('<B1-Motion>', slider_move)
 mul_slider.bind('<ButtonRelease-1>', slider_move)
 mul_slider.set(1)
 mul_slider.pack(side=TOP)
 
+toolbar_frames = []
+for t in range(9):
+    left_toolbar_frame = Frame(toolbar)
+    left_toolbar_frame.pack(side=LEFT)
+    toolbar_frames.append(left_toolbar_frame)
+
 c_sliders = []
 
 divisions_per_channel = 2
 settings_per_division = 512 // divisions_per_channel
-for t in toolbars:
-    for i in range(3 * divisions_per_channel):
+for t in toolbar_frames:
+    for i in range(2 * divisions_per_channel):
         c_slider = Scale(t, from_=-1, to=3, resolution=0.01, orient=HORIZONTAL, length=100)
         c_slider.bind('<B1-Motion>', slider_move)
         c_slider.bind('<ButtonRelease-1>', slider_move)
@@ -180,19 +183,26 @@ for t in toolbars:
         c_slider.pack(side=TOP)
         c_sliders.append(c_slider)
 
-# # medium sytle updates
-for i in range(0 * divisions_per_channel, 5 * divisions_per_channel, 1):
+# # update color only - 0 shape changes
+for i in range(0 * divisions_per_channel, 10 * divisions_per_channel, 1):
     c_sliders[i].set(0)
-for i in range(5 * divisions_per_channel, 7 * divisions_per_channel, 1):
-    c_sliders[i].set(.25)
-#for i in range(49,51,1): #eyes direction
-#    c_sliders[i].set(0) #eyes direction
-#for i in range(52,55,1): #eyes direction
-#    c_sliders[i].set(0) #eyes direction
-for i in range(7 * divisions_per_channel, 13 * divisions_per_channel, 1):
-    c_sliders[i].set(.5)
-for i in range(13 * divisions_per_channel, 18 * divisions_per_channel,1):
+for i in range(10 * divisions_per_channel, 18 * divisions_per_channel, 1):
     c_sliders[i].set(1)
+
+
+# # medium sytle updates
+# for i in range(0 * divisions_per_channel, 5 * divisions_per_channel, 1):
+#     c_sliders[i].set(0)
+# for i in range(5 * divisions_per_channel, 7 * divisions_per_channel, 1):
+#     c_sliders[i].set(.25)
+# for i in range(49,51,1): #eyes direction
+#    c_sliders[i].set(0) #eyes direction
+# for i in range(52,55,1): #eyes direction
+#    c_sliders[i].set(0) #eyes direction
+# for i in range(7 * divisions_per_channel, 13 * divisions_per_channel, 1):
+#     c_sliders[i].set(.5)
+# for i in range(13 * divisions_per_channel, 18 * divisions_per_channel,1):
+#     c_sliders[i].set(1)
 
 # for i in range(12):
 #     c_sliders[i].set(0)

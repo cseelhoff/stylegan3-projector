@@ -108,11 +108,11 @@ def project2(
         synth_images = G.synthesis(ws, noise_mode='const')
         synth_images = (synth_images + 1) * (255/2)
 
-        synth_image2 = synth_images.clone().permute(0, 2, 3, 1).clamp(0, 255).to(torch.uint8)[0].cpu().numpy()
-        image2 = PIL.Image.fromarray(synth_image2, 'RGB')
-        photo_image2 = PIL.ImageTk.PhotoImage(image2)
-        preview_label.itemconfig(image_container, image=photo_image2)
-        preview_label.update()
+        # synth_image2 = synth_images.clone().permute(0, 2, 3, 1).clamp(0, 255).to(torch.uint8)[0].cpu().numpy()
+        # image2 = PIL.Image.fromarray(synth_image2, 'RGB')
+        # photo_image2 = PIL.ImageTk.PhotoImage(image2)
+        # preview_label.itemconfig(image_container, image=photo_image2)
+        # preview_label.update()
 
         dist = 0
         for (c, target) in zip(coords, targets):
@@ -133,9 +133,9 @@ def project2(
                     break
                 noise = F.avg_pool2d(noise, kernel_size=2)
         #loss2 = w_opt[0][6:18].square().sum() * 0.0001
-        #loss2 = w_opt.square().sum() * 0.000001
-        #loss = loss2 + dist + (reg_loss * regularize_noise_weight)
-        loss = dist + (reg_loss * regularize_noise_weight)
+        loss2 = w_opt.square().sum() * 0.000001
+        loss = loss2 + dist + (reg_loss * regularize_noise_weight)
+        #loss = dist + (reg_loss * regularize_noise_weight)
 
         # Step
         optimizer.zero_grad(set_to_none=True)
@@ -253,7 +253,7 @@ def project1(preview_label, image_container):
     z_samples = torch.randn([w_avg_samples, G.mapping.z_dim], device=device)
     w_stds = G.mapping(z_samples, None).std(0)
     w_opt = (G.mapping(torch.randn([1,G.mapping.z_dim], device=device), None, truncation_psi=0.0001) - G.mapping.w_avg) / w_stds
-    target_short_names = os.listdir('./Rachael/')
+    target_short_names = os.listdir('./raw/')
     #target_short_names = ['mean.png']
     #target_short_names = ['10003.jpg']
     target_short_names.sort()
@@ -263,7 +263,7 @@ def project1(preview_label, image_container):
         if os.path.isfile(os.path.join('./outdir/', (target_short_name + '.npz'))):
             print('Exists')
             continue
-        file_path = os.path.join('./Rachael/', target_short_name)
+        file_path = os.path.join('./raw/', target_short_name)
         #try:
         landmarks = get_landmarks(file_path, predictor, detector, predictorRetinaFace)
         if landmarks is None:
